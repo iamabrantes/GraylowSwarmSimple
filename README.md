@@ -16,3 +16,5 @@ Para gerar o sha2 da senha usar o comando em um terminal:
 echo -n (senha) | shasum -a 256
 
 Alterar também a linha 64 apontando o endereço do seu cluster swarm
+
+By: Jonathan Costa de Abrantes
