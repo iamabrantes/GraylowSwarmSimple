@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - http.host=0.0.0.0
+      - cluster.name=elk
+      - transport.host=localhost
+      - network.host=0.0.0.0
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dlog4j2.formatMsgNoLookups=true"
+      - bootstrap.memory_lock=true
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  mongo:
+    image: mongo:4.2
+    volumes:
+      - mongo:/data/db
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  grayloggeral:
+    image: graylog/graylog:4.3.2
+    env_file:
+      - .env
+    environment:
+      - GRAYLOG_IS_MASTER=false
+    depends_on:
+      - mongo
+      - elasticsearch
+      - graylogmaster
+    ports:
+      - 1514:1514
+      - 5414:5414
+      - 5414:5414/udp
+      - 12201:12201/udp
+      - 30020:30020/udp
+      - 30020:30000
+      - 30010:30000/udp
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  graylogmaster:
+    image: graylog/graylog:4.3.2
+    env_file:
+      - .env
+    environment:
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://172.27.11.10:9000/
+      - GRAYLOG_IS_MASTER=true
+    depends_on:
+      - mongo
+      - elasticsearch
+    ports:
+      - 9000:9000
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+
+volumes:
+  mongo:
+  elastic:
+networks:
+  elk:
+    driver: overlay
