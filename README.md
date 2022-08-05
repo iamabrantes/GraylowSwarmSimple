@@ -1,4 +1,7 @@
 # Criação de cluster swarm para utilização do graylog
+
+Essa é uma solução simples desenvolvida para montar um laboratório utilizando docker swarm.
+
 O cluster consiste em 4 containers, sendo:
 
 1-MongoDB
